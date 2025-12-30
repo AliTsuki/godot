@@ -1609,9 +1609,19 @@ void ItemList::_notification(int p_what) {
 					}
 				}
 
+				StringName anim_id = StringName("item:" + itos(i));
+				StyleBox::begin_animation_group(anim_id);
 				if (style.is_valid()) {
 					draw_style_box(style, r);
 				}
+				StyleBox::end_animation_group(anim_id);
+
+				Vector2 margin_ofs = Vector2();
+				if (style.is_valid()) {
+					margin_ofs.x += style->get_margin(SIDE_LEFT) - style->get_margin(SIDE_RIGHT);
+					margin_ofs.y += style->get_margin(SIDE_TOP) - style->get_margin(SIDE_BOTTOM);
+				}
+				margin_ofs = StyleBox::get_animated_value(SNAME("margin_ofs"), margin_ofs, anim_id);
 
 				Vector2 text_ofs;
 				Size2 icon_size;
@@ -1622,7 +1632,7 @@ void ItemList::_notification(int p_what) {
 						icon_size = items[i].get_icon_size() * icon_scale;
 					}
 
-					Point2 pos = items[i].rect_cache.position + base_ofs;
+					Point2 pos = items[i].rect_cache.position + base_ofs + margin_ofs;
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.y += MAX(theme_cache.v_separation, 0) / 2;
@@ -1650,6 +1660,7 @@ void ItemList::_notification(int p_what) {
 					if (items[i].disabled) {
 						icon_modulate.a *= 0.5;
 					}
+					icon_modulate = StyleBox::get_animated_value(SNAME("icon_modulate"), icon_modulate, anim_id);
 
 					// If the icon is transposed, we have to switch the size so that it is drawn correctly
 					if (items[i].icon_transposed) {
@@ -1674,7 +1685,7 @@ void ItemList::_notification(int p_what) {
 						tag_icon_size = items[i].tag_icon->get_size();
 					}
 
-					Point2 draw_pos = items[i].rect_cache.position + base_ofs;
+					Point2 draw_pos = items[i].rect_cache.position + base_ofs + margin_ofs;
 					draw_pos.x += MAX(theme_cache.h_separation, 0) / 2;
 					draw_pos.y += MAX(theme_cache.v_separation, 0) / 2;
 					if (rtl) {
@@ -1718,7 +1729,7 @@ void ItemList::_notification(int p_what) {
 						}
 						items.write[i].text_buf->set_width(text_w);
 
-						text_ofs += base_ofs;
+						text_ofs += base_ofs + margin_ofs;
 						text_ofs += items[i].rect_cache.position;
 
 						if (rtl) {
@@ -1736,7 +1747,7 @@ void ItemList::_notification(int p_what) {
 
 						real_t text_width_ofs = text_ofs.x;
 
-						text_ofs += base_ofs;
+						text_ofs += base_ofs + margin_ofs;
 						text_ofs += items[i].rect_cache.position;
 
 						float text_w = items[i].rect_cache.size.width - text_width_ofs;
@@ -1780,6 +1791,7 @@ void ItemList::_notification(int p_what) {
 				}
 			}
 
+			StyleBox::begin_animation_group("cursor");
 			if (cursor_rcache.size != Size2()) { // Draw cursor last, so border isn't cut off.
 				cursor_rcache.position += base_ofs;
 
@@ -1789,6 +1801,7 @@ void ItemList::_notification(int p_what) {
 
 				draw_style_box(cursor, cursor_rcache);
 			}
+			StyleBox::end_animation_group("cursor");
 
 			if (scroll_hint_mode != SCROLL_HINT_MODE_DISABLED) {
 				Size2 control_size = get_size();
@@ -1805,12 +1818,14 @@ void ItemList::_notification(int p_what) {
 				}
 			}
 
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
+			StyleBox::begin_animation_group("list_focus");
 			if (has_focus(true)) {
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
 				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
+			StyleBox::end_animation_group("list_focus");
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 		} break;
 	}
 }
