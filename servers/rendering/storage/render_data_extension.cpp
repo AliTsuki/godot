@@ -73,7 +73,7 @@ void RenderSceneDataExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_view_projection, "view");
 
 	GDVIRTUAL_BIND(_get_uniform_buffer);
-	
+
 	GDVIRTUAL_BIND(_get_directional_light_buffer);
 	GDVIRTUAL_BIND(_get_omni_light_buffer);
 	GDVIRTUAL_BIND(_get_spot_light_buffer);

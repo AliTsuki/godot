@@ -90,7 +90,7 @@ public:
 	GDVIRTUAL1RC(Projection, _get_view_projection, uint32_t)
 
 	GDVIRTUAL0RC(RID, _get_uniform_buffer)
-	
+
 	GDVIRTUAL0RC(RID, _get_directional_light_buffer)
 	GDVIRTUAL0RC(RID, _get_omni_light_buffer)
 	GDVIRTUAL0RC(RID, _get_spot_light_buffer)
