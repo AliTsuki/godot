@@ -63,7 +63,7 @@ public:
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_TAPERED_CAPSULE; }
+	virtual PS3DE::ShapeType get_type() const { return PS3DE::SHAPE_TAPERED_CAPSULE; }
 
 	TaperedCapsuleShape3D();
 };

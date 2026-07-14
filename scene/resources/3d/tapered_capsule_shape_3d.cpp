@@ -149,9 +149,9 @@ real_t TaperedCapsuleShape3D::get_enclosing_radius() const {
 
 void TaperedCapsuleShape3D::_update_shape() {
 	Dictionary d;
-	static PhysicsServer3D::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
-	static bool can_make_tapered_shapes = created_shape == PhysicsServer3D::SHAPE_TAPERED_CAPSULE; // Jolt can do that
-	static bool can_make_basic_shape = created_shape == PhysicsServer3D::SHAPE_CAPSULE; // Dummy can't do that, but GodotPhysics3D can
+	static PS3DE::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
+	static bool can_make_tapered_shapes = created_shape == PS3DE::SHAPE_TAPERED_CAPSULE; // Jolt can do that
+	static bool can_make_basic_shape = created_shape == PS3DE::SHAPE_CAPSULE; // Dummy can't do that, but GodotPhysics3D can
 	if (can_make_tapered_shapes) {
 		d["radius_top"] = top_radius;
 		d["radius_bottom"] = bottom_radius;
@@ -234,6 +234,6 @@ void TaperedCapsuleShape3D::_bind_methods() {
 }
 
 TaperedCapsuleShape3D::TaperedCapsuleShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_TAPERED_CAPSULE)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_TAPERED_CAPSULE)) {
 	_update_shape();
 }

@@ -95,9 +95,9 @@ real_t TaperedCylinderShape3D::get_enclosing_radius() const {
 
 void TaperedCylinderShape3D::_update_shape() {
 	Dictionary d;
-	static PhysicsServer3D::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
-	static bool can_make_tapered_shapes = created_shape == PhysicsServer3D::SHAPE_TAPERED_CYLINDER; // Jolt can do that
-	static bool can_make_basic_shape = created_shape == PhysicsServer3D::SHAPE_CYLINDER; // Dummy can't do that, but GodotPhysics3D can
+	static PS3DE::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
+	static bool can_make_tapered_shapes = created_shape == PS3DE::SHAPE_TAPERED_CYLINDER; // Jolt can do that
+	static bool can_make_basic_shape = created_shape == PS3DE::SHAPE_CYLINDER; // Dummy can't do that, but GodotPhysics3D can
 	if (can_make_tapered_shapes) {
 		d["radius_top"] = top_radius;
 		d["radius_bottom"] = bottom_radius;
@@ -157,6 +157,6 @@ void TaperedCylinderShape3D::_bind_methods() {
 }
 
 TaperedCylinderShape3D::TaperedCylinderShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_TAPERED_CYLINDER)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_TAPERED_CYLINDER)) {
 	_update_shape();
 }
