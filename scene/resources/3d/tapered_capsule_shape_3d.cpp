@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "scene/resources/3d/tapered_capsule_mesh.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
 Vector<Vector3> TaperedCapsuleShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
@@ -159,7 +160,7 @@ void TaperedCapsuleShape3D::_update_shape() {
 	} else if (can_make_basic_shape) {
 		d["radius"] = (top_radius + bottom_radius) / 2.0;
 		d["height"] = get_height();
-		WARN_PRINT_ONCE("Tapered capsule shapes aren't supported by the current physics engine (" + PhysicsServer3DManager::get_singleton()->get_default_server_name() + "). They will behave as regular capsules instead.");
+		WARN_PRINT_ONCE("Tapered capsule shapes aren't supported by the current physics engine (" + PhysicsServer3DManager::get_singleton()->get_server_name(0) + "). They will behave as regular capsules instead.");
 	}
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();

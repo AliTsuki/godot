@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
 Vector<Vector3> TaperedCylinderShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
@@ -103,7 +104,7 @@ void TaperedCylinderShape3D::_update_shape() {
 		d["radius_bottom"] = bottom_radius;
 	} else if (can_make_basic_shape) {
 		d["radius"] = (top_radius + bottom_radius) / 2.0;
-		WARN_PRINT_ONCE("Tapered cylinder shapes aren't supported by the current physics engine (" + PhysicsServer3DManager::get_singleton()->get_default_server_name() + "). They will behave as regular cylinders instead.");
+		WARN_PRINT_ONCE("Tapered cylinder shapes aren't supported by the current physics engine (" + PhysicsServer3DManager::get_singleton()->get_server_name(0) + "). They will behave as regular cylinders instead.");
 	}
 	d["height"] = height;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
