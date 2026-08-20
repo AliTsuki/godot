@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  export_plugin.h                                                       */
+/*  line_3d.h                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,38 +30,37 @@
 
 #pragma once
 
-#include "editor/export/editor_export_platform_apple_embedded.h"
+#include "scene/3d/visual_instance_3d.h"
 
-class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
-	GDCLASS(EditorExportPlatformIOS, EditorExportPlatformAppleEmbedded);
+class Line3D : public GeometryInstance3D {
+	GDCLASS(Line3D, GeometryInstance3D);
 
-	static Vector<String> device_types;
-
-	virtual String get_platform_name() const override { return "ios"; }
-	virtual String get_sdk_name() const override { return "iphoneos"; }
-	virtual const Vector<String> get_device_types() const override { return device_types; }
-
-	virtual String get_minimum_deployment_target() const override { return "15.0"; }
-
-	virtual Vector<IconInfo> get_icon_infos() const override;
-
-	virtual void get_export_options(List<ExportOption> *r_options) const override;
-	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
-
-	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) override;
-	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
-
-	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
+protected:
+	static void _bind_methods();
 
 public:
-	virtual String get_name() const override { return "iOS"; }
-	virtual String get_os_name() const override { return "iOS"; }
+	enum MeshAlignment {
+		MESH_ALIGNMENT_LOCAL,
+		MESH_ALIGNMENT_BILLBOARD,
+		MESH_ALIGNMENT_MAX,
+	};
 
-	virtual void get_platform_features(List<String> *r_features) const override {
-		EditorExportPlatformAppleEmbedded::get_platform_features(r_features);
-		r_features->push_back("ios");
-	}
+	enum TilingMode {
+		TILING_MODE_UNIT,
+		TILING_MODE_LENGTH,
+		TILING_MAX,
+	};
 
-	virtual void initialize() override;
-	~EditorExportPlatformIOS();
+	enum MaterialMode {
+		MATERIAL_MODE_MIX,
+		MATERIAL_MODE_ADD,
+		MATERIAL_MODE_CUSTOM,
+		MATERIAL_MODE_MAX,
+	};
+
+	PackedStringArray get_configuration_warnings() const override;
 };
+
+VARIANT_ENUM_CAST(Line3D::TilingMode)
+VARIANT_ENUM_CAST(Line3D::MeshAlignment)
+VARIANT_ENUM_CAST(Line3D::MaterialMode)
