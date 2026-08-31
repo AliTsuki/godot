@@ -226,6 +226,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (rb_hover != -1) {
+				play_theme_sound(theme_cache.pressed_sound);
 				emit_signal(SNAME("tab_button_pressed"), rb_hover);
 			}
 
@@ -235,6 +236,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (cb_hover != -1) {
+				play_theme_sound(theme_cache.pressed_sound);
 				emit_signal(SNAME("tab_close_pressed"), cb_hover);
 			}
 
@@ -257,15 +259,21 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.x < theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
 							offset++;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
 						if (offset > 0) {
 							offset--;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					}
@@ -274,15 +282,21 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
 							offset++;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					} else if (pos.x > limit) {
 						if (offset > 0) {
 							offset--;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					}
@@ -302,6 +316,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						rb_pressing = true;
 						_update_hover();
 						queue_redraw();
+
+						if (current != found) {
+							play_theme_sound(theme_cache.pressed_sound);
+						}
 					}
 					return;
 				}
@@ -312,19 +330,30 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						cb_pressing = true;
 						_update_hover();
 						queue_redraw();
+
+						if (current != found) {
+							play_theme_sound(theme_cache.pressed_sound);
+						}
 					}
 					return;
 				}
 
 				// Selecting a tab.
-				if (selecting && !tabs[found].disabled) {
-					if (deselect_enabled && get_current_tab() == found) {
-						set_current_tab(-1);
-					} else {
-						set_current_tab(found);
+				if (selecting) {
+					// Handle audio feedback separately, so that we can play the "disabled" sound when needed.
+					if (current != found) {
+						play_theme_sound(tabs[found].disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
 					}
 
-					emit_signal(SNAME("tab_clicked"), found);
+					if (!tabs[found].disabled) {
+						if (deselect_enabled && get_current_tab() == found) {
+							set_current_tab(-1);
+						} else {
+							set_current_tab(found);
+						}
+
+						emit_signal(SNAME("tab_clicked"), found);
+					}
 				}
 
 				// Right mouse button clicked on a tab.
@@ -348,7 +377,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			if (is_layout_rtl() ? select_previous_available() : select_next_available()) {
+			if (is_layout_rtl() ? _select_previous_available(true) : _select_next_available(true)) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_left", true)) {
@@ -359,7 +388,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			if (is_layout_rtl() ? select_next_available() : select_previous_available()) {
+			if (is_layout_rtl() ? _select_next_available(true) : _select_previous_available(true)) {
 				accept_event();
 			}
 		}
@@ -444,11 +473,11 @@ void TabBar::_notification(int p_what) {
 			if (gamepad_event_delay_ms <= 0) {
 				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
 				if (input->is_action_pressed("ui_right")) {
-					is_layout_rtl() ? select_previous_available() : select_next_available();
+					is_layout_rtl() ? _select_previous_available(true) : _select_next_available(true);
 				}
 
 				if (input->is_action_pressed("ui_left")) {
-					is_layout_rtl() ? select_next_available() : select_previous_available();
+					is_layout_rtl() ? _select_next_available(true) : _select_previous_available(true);
 				}
 			}
 		} break;
@@ -598,6 +627,8 @@ void TabBar::_notification(int p_what) {
 
 				_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
 			}
+			StyleBox::end_animation_group("tab_focus");
+			draw_set_transform_matrix(Transform2D());
 
 			if (buttons_visible) {
 				int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
@@ -686,12 +717,19 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	if (tab_style_v_flip) {
 		draw_set_transform(Point2(0.0, p_tab_style->get_draw_rect(sb_rect).size.y), 0.0, Size2(1.0, -1.0));
 	}
+
+	StringName group_id = "tab:" + itos(p_index);
+	StyleBox::begin_animation_group(group_id);
 	p_tab_style->draw(ci, sb_rect);
+	StyleBox::end_animation_group(group_id);
+
 	if (tab_style_v_flip) {
 		draw_set_transform(Point2(), 0.0, Size2(1.0, 1.0));
 	}
+
 	if (p_focus) {
 		Ref<StyleBox> focus_style = theme_cache.tab_focus_style;
+		StyleBox::begin_animation_group("tab_focus");
 		focus_style->draw(ci, sb_rect);
 	}
 
@@ -713,11 +751,13 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	if (!tabs[p_index].text.is_empty()) {
 		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
 				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
+		text_pos = StyleBox::get_animated_value("text_position", text_pos, group_id);
+		Color font_color_animated = StyleBox::get_animated_value(SceneStringName(font_color), p_font_color, group_id);
 
 		if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 			tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
 		}
-		tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
+		tabs[p_index].text_buf->draw(ci, text_pos, font_color_animated);
 
 		p_x = rtl ? p_x - tabs[p_index].size_text - theme_cache.h_separation : p_x + tabs[p_index].size_text + theme_cache.h_separation;
 	}
@@ -734,6 +774,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 
 		tabs.write[p_index].rb_rect = rb_rect;
 
+		StyleBox::begin_animation_group("button_" + itos(p_index));
 		if (rb_hover == p_index) {
 			if (rb_pressing) {
 				theme_cache.button_pressed_style->draw(ci, rb_rect);
@@ -741,6 +782,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 				style->draw(ci, rb_rect);
 			}
 		}
+		StyleBox::end_animation_group();
 
 		rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 
@@ -761,6 +803,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 
 		tabs.write[p_index].cb_rect = cb_rect;
 
+		StringName sub_id = "close_" + itos(p_index);
+		StyleBox::begin_animation_group(sub_id);
 		if (!tabs[p_index].disabled && cb_hover == p_index) {
 			if (cb_pressing) {
 				theme_cache.button_pressed_style->draw(ci, cb_rect);
@@ -768,7 +812,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 				style->draw(ci, cb_rect);
 			}
 		}
-
+		StyleBox::end_animation_group(sub_id);
 		cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
 	} else {
 		tabs.write[p_index].cb_rect = Rect2();
@@ -905,18 +949,33 @@ int TabBar::get_next_available(int p_idx) const {
 }
 
 bool TabBar::select_previous_available() {
+	return _select_previous_available(false);
+}
+
+bool TabBar::_select_previous_available(bool p_play_sound) {
 	const int previous_available = get_previous_available();
 	if (previous_available != -1) {
 		set_current_tab(previous_available);
+		if (p_play_sound) {
+			play_theme_sound(theme_cache.pressed_sound);
+		}
 	}
 	return previous_available != -1;
 }
 
 bool TabBar::select_next_available() {
+	return _select_next_available(false);
+}
+
+bool TabBar::_select_next_available(bool p_play_sound) {
 	const int next_available = get_next_available();
 	if (next_available != -1) {
 		set_current_tab(next_available);
+		if (p_play_sound) {
+			play_theme_sound(theme_cache.pressed_sound);
+		}
 	}
+
 	return next_available != -1;
 }
 
@@ -1219,6 +1278,9 @@ void TabBar::_update_hover() {
 		hover = hover_now;
 
 		if (hover != -1) {
+			if (hover != current && !is_tab_disabled(hover)) {
+				play_theme_sound(theme_cache.hover_sound);
+			}
 			emit_signal(SNAME("tab_hovered"), hover);
 		}
 
@@ -2417,6 +2479,11 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, close_icon, "close");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_pressed_style, "button_pressed");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_hl_style, "button_highlight");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, hover_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, pressed_disabled_sound);
 
 	Tab defaults(true);
 

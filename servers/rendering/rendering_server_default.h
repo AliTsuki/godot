@@ -502,6 +502,7 @@ public:
 	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
 	FUNC2(light_set_bake_mode, RID, RSE::LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
+	FUNC2(light_set_allow_contact_shadows, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, RSE::LightOmniShadowMode)
 
@@ -872,7 +873,7 @@ public:
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	FUNC6(environment_set_ssao_quality, RSE::EnvironmentSSAOQuality, bool, float, int, float, float)
 
-	FUNC6(environment_set_ssil, RID, bool, float, float, float, float)
+	FUNC7(environment_set_ssil, RID, bool, float, float, float, float, float)
 	FUNC6(environment_set_ssil_quality, RSE::EnvironmentSSILQuality, bool, float, int, float, float)
 
 	FUNC13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RSE::EnvironmentGlowBlendMode, float, float, float, float, RID)
@@ -1052,6 +1053,7 @@ public:
 	FUNC3(canvas_item_add_multimesh, RID, RID, RID)
 	FUNC3(canvas_item_add_particles, RID, RID, RID)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
+	FUNC2(canvas_item_add_set_modulate, RID, const Color &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
 	FUNC5(canvas_item_add_animation_slice, RID, double, double, double, double)
 
