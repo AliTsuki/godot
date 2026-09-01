@@ -184,7 +184,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
@@ -193,7 +193,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_constant] for more details.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_default_base_scale" qualifiers="const">
@@ -251,6 +251,15 @@
 			<description>
 				Returns a sound from the first matching [Theme] in the tree if that [Theme] has a sound item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_sound] for details.
+			</description>
+		</method>
+		<method name="get_theme_sound" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a sound from the first matching [Theme] in the tree if that [Theme] has a sound item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">

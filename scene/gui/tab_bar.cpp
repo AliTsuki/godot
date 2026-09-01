@@ -186,6 +186,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (get_viewport()->gui_is_dragging() && can_drop_data(pos, get_viewport()->gui_get_drag_data())) {
+			if (!dragging_valid_tab) {
+				// Play the sound only once when the drag operation begins.
+				play_theme_sound(theme_cache.drag_started_sound);
+			}
 			dragging_valid_tab = true;
 			queue_redraw();
 		}
@@ -564,6 +568,7 @@ void TabBar::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (dragging_valid_tab) {
 				dragging_valid_tab = false;
+				play_theme_sound(theme_cache.drag_ended_sound);
 				queue_redraw();
 			}
 			[[fallthrough]];
@@ -2484,6 +2489,8 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, hover_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, pressed_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, pressed_disabled_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, drag_ended_sound);
 
 	Tab defaults(true);
 

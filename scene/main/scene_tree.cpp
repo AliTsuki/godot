@@ -1527,6 +1527,10 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	}
 }
 
+void SceneTree::_project_settings_changed() {
+	gui_theme_bus = GLOBAL_GET("audio/buses/gui_theme_bus");
+}
+
 void SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
@@ -2234,6 +2238,8 @@ SceneTree::SceneTree() {
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
 	root->connect(SceneStringName(focus_entered), callable_mp(this, &SceneTree::_main_window_focus_in));
+
+	ProjectSettings::get_singleton()->connect(SNAME("settings_changed"), callable_mp(this, &SceneTree::_project_settings_changed));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = nullptr;

@@ -287,6 +287,8 @@ private:
 	//used by viewport
 	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
+	void _project_settings_changed();
+
 protected:
 	void _notification(int p_notification);
 	static void _bind_methods();

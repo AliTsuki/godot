@@ -1504,6 +1504,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 			emit_signal(SNAME("color_changed"), p_color);
 		} else if (bev->is_pressed() && bev->get_button_index() == MouseButton::RIGHT && can_add_swatches) {
 			erase_preset(p_color);
+			play_theme_sound(theme_cache.pressed_sound);
 			emit_signal(SNAME("preset_removed"), p_color);
 		}
 	}

@@ -194,6 +194,8 @@ private:
 		Ref<AudioStream> hover_sound;
 		Ref<AudioStream> pressed_sound;
 		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
 	} theme_cache;
 
 	Timer *hover_switch_delay = nullptr;
