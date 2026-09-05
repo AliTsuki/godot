@@ -287,9 +287,6 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/sky_material.h"
-#include "scene/resources/3d/tapered_capsule_mesh.h"
-#include "scene/resources/3d/tapered_capsule_shape_3d.h"
-#include "scene/resources/3d/tapered_cylinder_shape_3d.h"
 #include "scene/resources/3d/world_3d.h"
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_agent_3d.h"
