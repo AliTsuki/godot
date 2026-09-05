@@ -262,6 +262,15 @@
 				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
+		<method name="get_theme_sound" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a sound from the first matching [Theme] in the tree if that [Theme] has a sound item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
 			<return type="StyleBox" />
 			<param index="0" name="name" type="StringName" />

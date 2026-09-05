@@ -1822,6 +1822,7 @@ void SceneTree::play_theme_sound(const Ref<AudioStream> &p_stream) {
 	audio_stream_player->set_bus(gui_theme_bus);
 	audio_stream_player->set_stream(p_stream);
 	audio_stream_player->set_autoplay(true);
+	audio_stream_player->set_process_mode(Node::PROCESS_MODE_ALWAYS);
 	audio_stream_player->connect(SceneStringName(finished), callable_mp((Node *)audio_stream_player, &Node::queue_free));
 	root->add_child(audio_stream_player);
 }
@@ -2239,7 +2240,7 @@ SceneTree::SceneTree() {
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
 	root->connect(SceneStringName(focus_entered), callable_mp(this, &SceneTree::_main_window_focus_in));
 
-	ProjectSettings::get_singleton()->connect(SNAME("settings_changed"), callable_mp(this, &SceneTree::_project_settings_changed));
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SceneTree::_project_settings_changed));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = nullptr;
