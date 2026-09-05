@@ -3852,10 +3852,26 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		u.append_id(texture);
 		uniforms.push_back(u);
 	}
-#ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	{
 		RD::Uniform u;
 		u.binding = 37;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+
+		RID sscs;
+		if (rb_data.is_valid()) {
+			if (rb->has_texture(RB_SCOPE_SSCS, RB_SSCS)) {
+				sscs = rb->get_texture(RB_SCOPE_SSCS, RB_SSCS);
+			}
+		}
+
+		RID texture = sscs.is_valid() ? sscs : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK);
+		u.append_id(texture);
+		uniforms.push_back(u);
+	}
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	{
+		RD::Uniform u;
+		u.binding = 38;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		RID instance_buffer = TextureStreaming::get_singleton()->feedback_buffer_get_uniform_rid();
 		if (instance_buffer.is_null()) {
