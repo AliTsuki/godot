@@ -1847,7 +1847,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const
 #endif // TOOLS_ENABLED
 
 		for (PropertyInfo &prop : props) {
-			p_properties->push_back(prop);
+			r_properties->push_back(prop);
 		}
 
 		props.clear();

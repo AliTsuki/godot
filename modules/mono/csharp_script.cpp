@@ -1641,7 +1641,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 #endif
 
 		for (PropertyInfo &prop : props) {
-			p_properties->push_back(prop);
+			r_properties->push_back(prop);
 		}
 
 		top = top->base_script.ptr();

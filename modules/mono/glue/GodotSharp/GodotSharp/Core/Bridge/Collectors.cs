@@ -89,12 +89,12 @@ public class PropertyTrampolineCollector
     /// accessor while inheriting the other one. This is done only to match the behavior of the old
     /// trampoline system (SetGodotClassPropertyTrampoline and GetGodotClassPropertyTrampoline).
     /// </summary>
-    public unsafe void TryAdd(StringName propertyName, PropertyGetterTrampoline getterTrampoline, PropertySetterTrampoline setterTrampoline)
+    public unsafe void TryAdd(StringName propertyName, PropertyTrampolines trampolines)
     {
         var propertyNameSelf = (godot_string_name)propertyName.NativeValue;
         _tryAddDelegate(_scriptPtr, &propertyNameSelf,
-            getterTrampoline.TrampolineDelegate,
-            setterTrampoline.TrampolineDelegate);
+            trampolines.getterTramp.TrampolineDelegate,
+            trampolines.setterTramp.TrampolineDelegate);
     }
 }
 
@@ -145,7 +145,7 @@ public class RaiseSignalTrampolineCollector
 /// Group of collectors passed to the user script to collect trampolines
 /// and method name to proxy name mappings for a script.
 /// </summary>
-public class TrampolineCollectors(
+public record TrampolineCollectors(
     MethodTrampolineCollector MethodTrampolineCollector,
     PropertyTrampolineCollector PropertyTrampolineCollector,
     RaiseSignalTrampolineCollector RaiseSignalTrampolineCollector)
@@ -169,4 +169,4 @@ public class TrampolineCollectors(
 /// If true, the trampoline collection method of each ancestor class must be called
 /// after the trampoline collection method of the current class.
 /// </param>
-public class TrampolineCollectionOptions(bool IncludeAncestors);
+public record TrampolineCollectionOptions(bool IncludeAncestors);

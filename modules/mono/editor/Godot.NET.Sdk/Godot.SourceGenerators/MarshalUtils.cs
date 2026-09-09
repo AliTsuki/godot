@@ -315,7 +315,7 @@ namespace Godot.SourceGenerators
         private const string VariantUtils = "global::Godot.NativeInterop.VariantUtils";
 
         public static StringBuilder AppendNativeVariantToManagedExpr(this StringBuilder source,
-            string  inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+            (string firstHalf, string secondHalf) inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
         {
             return marshalType switch
             {
@@ -323,40 +323,52 @@ namespace Godot.SourceGenerators
                 MarshalType.GodotObjectOrDerivedArray =>
                     source.Append(VariantUtils, ".ConvertToSystemArrayOfGodotObject<",
                         ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedNameIncludeGlobal(), ">(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.ConvertTo<T> is slower
                 MarshalType.GodotGenericDictionary =>
                     source.Append(VariantUtils, ".ConvertToDictionary<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ", ",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedNameIncludeGlobal(), ">(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 MarshalType.GodotGenericArray =>
                     source.Append(VariantUtils, ".ConvertToArray<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ">(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 _ => source.Append(VariantUtils, ".ConvertTo<",
-                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
+                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr.firstHalf, inputExpr.secondHalf, ")"),
             };
         }
 
-        public static StringBuilder AppendManagedToNativeVariantExpr(this StringBuilder source,
+        public static StringBuilder AppendNativeVariantToManagedExpr(this StringBuilder source,
             string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+        {
+            return AppendNativeVariantToManagedExpr(source, ("", inputExpr), typeSymbol, marshalType);
+        }
+
+        public static StringBuilder AppendManagedToNativeVariantExpr(this StringBuilder source,
+            (string firstHalf, string secondHalf) inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
         {
             return marshalType switch
             {
                 // We need a special case for GodotObjectOrDerived[], because it's not supported by VariantUtils.CreateFrom<T>
                 MarshalType.GodotObjectOrDerivedArray =>
                     source.Append(VariantUtils, ".CreateFromSystemArrayOfGodotObject(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.CreateFrom<T> is slower
                 MarshalType.GodotGenericDictionary =>
                     source.Append(VariantUtils, ".CreateFromDictionary(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 MarshalType.GodotGenericArray =>
-                    source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
+                    source.Append(VariantUtils, ".CreateFromArray(", inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 _ => source.Append(VariantUtils, ".CreateFrom<",
-                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
+                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr.firstHalf, inputExpr.secondHalf, ")"),
             };
+        }
+
+        public static StringBuilder AppendManagedToNativeVariantExpr(this StringBuilder source,
+            string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+        {
+            return AppendManagedToNativeVariantExpr(source, ("", inputExpr), typeSymbol, marshalType);
         }
 
         public static StringBuilder AppendVariantToManagedExpr(this StringBuilder source,
