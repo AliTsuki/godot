@@ -47,6 +47,20 @@ class EditorLocaleDialog : public ConfirmationDialog {
 		SHOW_ONLY_SELECTED_LOCALES,
 	};
 
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
+	String base_type;
+	String interface_hint_string;
+	bool allow_multi_select = false;
+
+	Vector<String> files;
+	OAHashMap<String, Ref<Texture2D>> icons;
+
+	struct Entry {
+		String path;
+		float score = 0;
+	};
+
 	HBoxContainer *hb_locale = nullptr;
 	VBoxContainer *vb_script_list = nullptr;
 	OptionButton *filter_mode = nullptr;
@@ -87,4 +101,9 @@ public:
 
 	void set_locale(const String &p_locale);
 	void popup_locale_dialog();
+	String get_selected() const;
+	Vector<String> get_selected_files() const;
+
+	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false, const String &p_interface_hint = String());
+	EditorQuickOpen();
 };
