@@ -1558,18 +1558,20 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 	while (top != nullptr) {
 		props.clear();
 #ifdef TOOLS_ENABLED
-		for (const PropertyInfo &prop : top->exported_members_cache) {
+		for (PropertyInfo prop : top->exported_members_cache) {
+			validate_property(prop);
 			props.push_back(prop);
 		}
 #else
 		for (const KeyValue<StringName, PropertyInfo> &E : top->member_info) {
-			props.push_front(E.value);
+			PropertyInfo info = E.value;
+			validate_property(info);
+			props.push_front(info);
 		}
 #endif
 
 		for (PropertyInfo &prop : props) {
-			validate_property(prop);
-			r_properties->push_back(prop);
+			p_properties->push_back(prop);
 		}
 
 		top = top->base_script.ptr();
