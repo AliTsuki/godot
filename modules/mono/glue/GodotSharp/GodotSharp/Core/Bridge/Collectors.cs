@@ -12,7 +12,7 @@ using PropertyTrampolines = (PropertyGetterTrampoline getterTramp, PropertySette
 /// The user script can implement a static method "GetGodotClassTrampolines"
 /// that receives an instance of <see cref="TrampolineCollectors"/> which
 /// contains an instance of this class. The user script can then call the
-/// <see cref="TryAdd"/> method of this class to add methodsto the script.<br/>
+/// <see cref="TryAdd"/> method of this class to add methods to the script.<br/>
 /// <br/>
 /// "GetGodotClassTrampolines" must be called on the most derived class first,
 /// and after collecting the members for that class, its implementation must call the base
@@ -89,12 +89,12 @@ public class PropertyTrampolineCollector
     /// accessor while inheriting the other one. This is done only to match the behavior of the old
     /// trampoline system (SetGodotClassPropertyTrampoline and GetGodotClassPropertyTrampoline).
     /// </summary>
-    public unsafe void TryAdd(StringName propertyName, PropertyTrampolines trampolines)
+    public unsafe void TryAdd(StringName propertyName, PropertyGetterTrampoline getterTrampoline, PropertySetterTrampoline setterTrampoline)
     {
         var propertyNameSelf = (godot_string_name)propertyName.NativeValue;
         _tryAddDelegate(_scriptPtr, &propertyNameSelf,
-            trampolines.getterTramp.TrampolineDelegate,
-            trampolines.setterTramp.TrampolineDelegate);
+            getterTrampoline.TrampolineDelegate,
+            setterTrampoline.TrampolineDelegate);
     }
 }
 
@@ -145,7 +145,7 @@ public class RaiseSignalTrampolineCollector
 /// Group of collectors passed to the user script to collect trampolines
 /// and method name to proxy name mappings for a script.
 /// </summary>
-public record TrampolineCollectors(
+public class TrampolineCollectors(
     MethodTrampolineCollector MethodTrampolineCollector,
     PropertyTrampolineCollector PropertyTrampolineCollector,
     RaiseSignalTrampolineCollector RaiseSignalTrampolineCollector)
@@ -169,4 +169,4 @@ public record TrampolineCollectors(
 /// If true, the trampoline collection method of each ancestor class must be called
 /// after the trampoline collection method of the current class.
 /// </param>
-public record TrampolineCollectionOptions(bool IncludeAncestors);
+public class TrampolineCollectionOptions(bool IncludeAncestors);

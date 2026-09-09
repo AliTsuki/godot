@@ -376,7 +376,7 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe void RaiseEventSignal(IntPtr ownerGCHandlePtr,
-            godot_string_name* eventSignalName, godot_variant** args, int argCount, godot_bool* refOwnerIsNull)
+            godot_string_name* eventSignalName, godot_variant** args, int argCount, godot_bool* outOwnerIsNull)
         {
             try
             {
@@ -384,11 +384,11 @@ namespace Godot.Bridge
 
                 if (owner == null)
                 {
-                    *refOwnerIsNull = godot_bool.True;
+                    *outOwnerIsNull = godot_bool.True;
                     return;
                 }
 
-                *refOwnerIsNull = godot_bool.False;
+                *outOwnerIsNull = godot_bool.False;
 
                 owner.RaiseGodotClassSignalCallbacks(CustomUnsafe.AsRef(eventSignalName),
                     new NativeVariantPtrArgs(args, argCount));
@@ -396,14 +396,14 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *refOwnerIsNull = godot_bool.False;
+                *outOwnerIsNull = godot_bool.False;
             }
         }
 
         [UnmanagedCallersOnly]
         internal static unsafe void RaiseEventSignalViaTrampoline(
             RaiseSignalTrampolineDelegate raiseSignalTrampoline,
-            IntPtr ownerGCHandlePtr, godot_variant** args, int argCount, godot_bool* refOwnerIsNull)
+            IntPtr ownerGCHandlePtr, godot_variant** args, int argCount, godot_bool* outOwnerIsNull)
         {
             try
             {
@@ -411,18 +411,18 @@ namespace Godot.Bridge
 
                 if (owner == null)
                 {
-                    *refOwnerIsNull = godot_bool.True;
+                    *outOwnerIsNull = godot_bool.True;
                     return;
                 }
 
-                *refOwnerIsNull = godot_bool.False;
+                *outOwnerIsNull = godot_bool.False;
 
                 raiseSignalTrampoline(owner, new NativeVariantPtrArgs(args, argCount));
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *refOwnerIsNull = godot_bool.False;
+                *outOwnerIsNull = godot_bool.False;
             }
         }
 
@@ -828,6 +828,14 @@ namespace Godot.Bridge
 
                 Type native = GodotObject.InternalGetClassNativeBase(scriptType);
 
+                // No need to check for "HasGodotClassMethod" nor "HasGodotClassSignal",
+                // as these always accompany "InvokeGodotClassMethod" and "RaiseGodotClassSignalCallbacks".
+                *outShouldFallbackToLegacyTrampolines =
+                    (DoesUserScriptContainMethod("InvokeGodotClassMethod")
+                     || DoesUserScriptContainMethod("SetGodotClassPropertyValue")
+                     || DoesUserScriptContainMethod("GetGodotClassPropertyValue")
+                     || DoesUserScriptContainMethod("RaiseGodotClassSignalCallbacks")).ToGodotBool();
+
                 bool DoesUserScriptContainMethod(string methodName)
                 {
                     var methodInfo = scriptType.GetMethod(methodName,
@@ -844,14 +852,6 @@ namespace Godot.Bridge
 
                     return false;
                 }
-
-                // No need to check for "HasGodotClassMethod" nor "HasGodotClassSignal",
-                // as these always accompany "InvokeGodotClassMethod" and "RaiseGodotClassSignalCallbacks".
-                *outShouldFallbackToLegacyTrampolines =
-                    (DoesUserScriptContainMethod("InvokeGodotClassMethod")
-                     || DoesUserScriptContainMethod("SetGodotClassPropertyValue")
-                     || DoesUserScriptContainMethod("GetGodotClassPropertyValue")
-                     || DoesUserScriptContainMethod("RaiseGodotClassSignalCallbacks")).ToGodotBool();
             }
             catch (Exception e)
             {

@@ -146,7 +146,7 @@ namespace Godot.SourceGenerators
 
                 if (invokeMethodData == null)
                 {
-                    if (signalDelegateSymbol.DelegateInvokeMethod is { } methodSymbol)
+                    if (signalDelegateSymbol.DelegateInvokeMethod is IMethodSymbol methodSymbol)
                     {
                         foreach (var parameter in methodSymbol.Parameters)
                         {

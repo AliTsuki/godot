@@ -216,7 +216,7 @@ namespace Godot.SourceGenerators
             {
                 const string CollectorType = "global::Godot.Bridge.MethodTrampolineCollector";
 
-                source.Append("        public new static ")
+                source.Append("        public static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
                     .Append("void GetGodotMethodTrampolines(")
                     .Append(CollectorType).Append(" collector)\n        {\n");

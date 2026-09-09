@@ -411,13 +411,13 @@ namespace Godot.SourceGenerators
             this INamedTypeSymbol classTypeSymbol, string godotInternalMethod)
         {
             var top = classTypeSymbol;
-
+            var cts = classTypeSymbol.GetGodotScriptNativeClass();
             do
             {
                 top = top.BaseType;
 
                 if (top == null ||
-                    SymbolEqualityComparer.Default.Equals(top, classTypeSymbol.GetGodotScriptNativeClass()))
+                    SymbolEqualityComparer.Default.Equals(top, cts))
                 {
                     // Reached a native class, stop looking.
                     return null;
