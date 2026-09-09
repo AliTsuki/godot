@@ -638,15 +638,6 @@ namespace Godot.SourceGenerators
             hint = PropertyHint.None;
             hintString = null;
 
-            if (type.TypeKind == TypeKind.Interface)
-            {
-                hint = PropertyHint.Interface;
-                // prefix should match CSharpLanguage::get_name()
-                hintString = "C#," + type.FullQualifiedNameOmitGlobal();
-                return true;
-            }
-
-
             if (variantType == VariantType.Nil)
                 return true; // Variant, no export hint
 

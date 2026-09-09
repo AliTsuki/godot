@@ -755,7 +755,6 @@ class EditorPropertyResource : public EditorProperty {
 	void _resource_expand_requested(const Ref<Resource> &p_resource, bool p_inspect);
 	void _select_resource(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open);
 	void _resource_changed(const Ref<Resource> &p_resource);
-	void _node_changed(const NodePath &p_node_path); // For interface exports
 
 	Node *_get_base_node();
 	void _viewport_selected(const NodePath &p_path);
@@ -778,7 +777,6 @@ public:
 	virtual void update_property() override;
 	void setup(Object *p_object, const String &p_path, const String &p_base_type);
 	EditorResourcePicker *get_resource_picker() const { return resource_picker; }
-	void setup(Object *p_object, const String &p_path, const String &p_base_type, const String &p_interface_hint_string = String());
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;

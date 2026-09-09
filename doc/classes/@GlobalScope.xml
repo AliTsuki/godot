@@ -3013,12 +3013,7 @@
 		<constant name="PROPERTY_HINT_AUDIO_BUS" value="45" enum="PropertyHint">
 			Hints that a [String] or [StringName] property is the name of an audio bus. This allows the selection of predefined bus names registered with the audio server.
 		</constant>
-		<constant name="PROPERTY_HINT_INTERFACE" value="46" enum="PropertyHint">
-			Hints that an Object property is an instance of a type that implements the specified interface.
-			The language and interfaces must be specified by a comma separated hint string, where the first token is the language name and subsequent tokens are interfaces (e.g. [code]"C#,InterfaceA"[/code]).
-			The inspector will allow any Resource or Node (if the edited object is also a Node) that implements the interface to be selected.
-		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

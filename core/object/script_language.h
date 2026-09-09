@@ -195,7 +195,6 @@ public:
 
 	virtual void get_constants(HashMap<StringName, Variant> *r_constants) {}
 	virtual void get_members(HashSet<StringName> *r_members) {}
-	virtual void get_interfaces(HashSet<StringName> *r_list) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
