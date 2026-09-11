@@ -604,10 +604,10 @@
 			Texture for the clear button. See [member clear_button_enabled].
 		</theme_item>
 		<theme_item name="caret_move_rejected_sound" data_type="sound" type="AudioStream">
-			Played when the caret is attempted to be moved using the arrow keys, Home, End, Page Up, or Page Down, but the caret doesn't actually move since it's already at the beginning/end of the text.
+			Played when the caret is attempted to be moved using the arrow keys, [kbd]Home[/kbd], [kbd]End[/kbd], [kbd]Page Up[/kbd], or [kbd]Page Down[/kbd], but the caret doesn't actually move since it's already at the beginning/end of the text.
 		</theme_item>
 		<theme_item name="caret_moved_sound" data_type="sound" type="AudioStream">
-			Played when the caret is moved using the arrow keys, Home, End, Page Up, Page Down, or mouse clicks.
+			Played when the caret is moved using the arrow keys, [kbd]Home[/kbd], [kbd]End[/kbd], [kbd]Page Up[/kbd], [kbd]Page Down[/kbd], or mouse clicks.
 		</theme_item>
 		<theme_item name="focus_sound" data_type="sound" type="AudioStream">
 			Played when this [LineEdit] receives keyboard or gamepad-induced focus. Mouse or touch-induced focus does not play a focus sound.
