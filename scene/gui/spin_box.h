@@ -148,6 +148,7 @@ class SpinBox : public Range {
 		int buttons_vertical_separation = 0;
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
+		int icon_max_width = 0;
 
 		Ref<AudioStream> focus_sound;
 		Ref<AudioStream> pressed_sound;
@@ -172,6 +173,7 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
 
 public:
