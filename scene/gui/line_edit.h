@@ -228,6 +228,7 @@ private:
 
 		Ref<AudioStream> focus_sound;
 		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> caret_move_rejected_sound;
 		Ref<AudioStream> text_submitted_sound;
 		Ref<AudioStream> text_changed_sound;
 		Ref<AudioStream> text_change_rejected_sound;

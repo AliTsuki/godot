@@ -242,7 +242,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		status.pressing_inside = true;
 		if (!status.pressed_down_with_focus) {
 			status.pressed_down_with_focus = true;
-			emit_signal(SNAME("button_down"));
+			if (!status.disabled) {
+				emit_signal(SNAME("button_down"));
+			}
 		}
 	}
 
@@ -279,7 +281,9 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		status.pressing_inside = false;
 		if (status.pressed_down_with_focus) {
 			status.pressed_down_with_focus = false;
-			emit_signal(SNAME("button_up"));
+			if (!status.disabled) {
+				emit_signal(SNAME("button_up"));
+			}
 		}
 	}
 
@@ -507,6 +511,13 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
+		if (is_disabled()) {
+			// Play the disabled sound here, as `press()` early returns if the button is disabled
+			// (which causes the `play_theme_sound()` call in `_pressed()` to not be called).
+			// This is not needed for the non-disabled press sound.
+			play_theme_sound(theme_cache.pressed_disabled_sound);
+		}
+
 		press();
 		accept_event();
 

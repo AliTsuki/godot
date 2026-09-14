@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/resource_loader.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"

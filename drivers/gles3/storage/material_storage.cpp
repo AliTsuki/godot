@@ -3120,7 +3120,6 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.stencil_mode_values["write_op_increment_and_clamp"] = Pair<int *, int>(&stencil_write_opi, STENCIL_WRITE_OP_INCREMENT_AND_CLAMP);
 	actions.stencil_mode_values["write_op_decrement_and_clamp"] = Pair<int *, int>(&stencil_write_opi, STENCIL_WRITE_OP_DECREMENT_AND_CLAMP);
 
-
 	actions.stencil_reference = &stencil_referencei;
 
 	actions.uniforms = &uniforms;

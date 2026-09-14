@@ -82,6 +82,14 @@ public:
 	virtual RID decal_atlas_get_texture_srgb() const override;
 	virtual RID directional_shadow_get_texture() const override;
 
+	virtual RID get_directional_light_buffer() const override;
+	virtual RID get_omni_light_buffer() const override;
+	virtual RID get_spot_light_buffer() const override;
+
+	virtual RID decal_atlas_get_texture() const override;
+	virtual RID decal_atlas_get_texture_srgb() const override;
+	virtual RID directional_shadow_get_texture() const override;
+
 	GDVIRTUAL0RC(Transform3D, _get_cam_transform)
 	GDVIRTUAL0RC(Projection, _get_cam_projection)
 

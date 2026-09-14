@@ -199,6 +199,8 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 		return;
 	}
 
+	const int previous_caret_column = caret_column;
+
 	shift_selection_check_pre(p_select);
 
 	if (p_move_by_word) {
@@ -228,7 +230,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 	shift_selection_check_post(p_select);
 	_reset_caret_blink_timer();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
 }
 
 void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
@@ -237,6 +239,8 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 		deselect();
 		return;
 	}
+
+	const int previous_caret_column = caret_column;
 
 	shift_selection_check_pre(p_select);
 
@@ -267,21 +271,23 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 	shift_selection_check_post(p_select);
 	_reset_caret_blink_timer();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
 }
 
 void LineEdit::_move_caret_start(bool p_select) {
+	const int previous_caret_column = caret_column;
 	shift_selection_check_pre(p_select);
 	set_caret_column(0);
 	shift_selection_check_post(p_select);
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
 }
 
 void LineEdit::_move_caret_end(bool p_select) {
+	const int previous_caret_column = caret_column;
 	shift_selection_check_pre(p_select);
 	set_caret_column(text.length());
 	shift_selection_check_post(p_select);
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
 }
 
 void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
@@ -342,6 +348,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 	}
 
 	if (caret_column == text.length()) {
+		play_theme_sound(theme_cache.text_change_rejected_sound);
 		return; // Nothing to do.
 	}
 
@@ -3581,6 +3588,7 @@ void LineEdit::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, focus_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, caret_moved_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, caret_move_rejected_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, text_submitted_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, text_changed_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, text_change_rejected_sound);

@@ -396,7 +396,6 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 			RD::STENCIL_OP_DECREMENT_AND_CLAMP,
 		};
 
-
 		uint32_t stencil_mask = 255;
 
 		RD::PipelineDepthStencilState::StencilOperationState op;

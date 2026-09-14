@@ -317,7 +317,6 @@ half sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec
 	// TODO: Use derivatives to threshold hardness so that it's low enough to avoid aliasing at a distance.
 	const float HARDNESS = 2.0;
 
-
 	//if only one sample is taken, take it from the center
 	if (sc_directional_soft_shadow_samples() == 0) {
 		return smoothstep(0.0, 1.0, 0.5 + textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0)) * HARDNESS - HARDNESS * 0.5);
@@ -338,7 +337,7 @@ half sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec
 		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data_block.data.directional_soft_shadow_kernel[i].xy), depth, 1.0));
 	}
 
-	return smoothstep(0.0, 1.0, 0.5 + avg * (1.0 / float(sc_directional_soft_shadow_samples())) * HARDNESS - HARDNESS * 0.5);
+	return half(smoothstep(0.0, 1.0, 0.5 + avg * (1.0 / float(sc_directional_soft_shadow_samples())) * HARDNESS - HARDNESS * 0.5));
 }
 
 half sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, float taa_frame_count) {
@@ -376,7 +375,7 @@ half sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec4
 		return half(textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0)));
 	}
 
-	mat2 disk_rotation = mat2(1.0);;
+	mat2 disk_rotation = mat2(1.0);
 	//{
 	//	float r = quick_hash(gl_FragCoord.xy + vec2(taa_frame_count * 5.588238)) * 2.0 * M_PI;
 	//	float sr = sin(r);
@@ -409,7 +408,7 @@ half sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec4
 		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(sample_coord, depth, 1.0));
 	}
 
-	return (avg * (1.0 / float(sc_soft_shadow_samples()))) > 0.5 ? 1.0 : 0.0;
+	return half((avg * (1.0 / float(sc_soft_shadow_samples()))) > 0.5 ? 1.0 : 0.0);
 }
 
 half sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_scale, float taa_frame_count) {
@@ -1037,13 +1036,13 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			float blocker_count = 0.0;
 			float blocker_average = 0.0;
 
-			mat2 disk_rotation;
-			{
-				float r = quick_hash(gl_FragCoord.xy + vec2(taa_frame_count * 5.588238)) * 2.0 * M_PI;
-				float sr = sin(r);
-				float cr = cos(r);
-				disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
-			}
+			mat2 disk_rotation = mat2(1.0);
+			//{
+			//	float r = quick_hash(gl_FragCoord.xy + vec2(taa_frame_count * 5.588238)) * 2.0 * M_PI;
+			//	float sr = sin(r);
+			//	float cr = cos(r);
+			//	disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+			//}
 
 			vec3 basis_normal = shadow_dir;
 			vec3 v0 = abs(basis_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);

@@ -204,7 +204,6 @@ public:
 			STENCIL_WRITE_OP_MAX // Not an actual operation, just the amount of operations.
 		};
 
-
 		struct PipelineKey {
 			RD::VertexFormatID vertex_format_id;
 			RD::FramebufferFormatID framebuffer_format_id;

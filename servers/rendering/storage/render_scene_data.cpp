@@ -41,8 +41,6 @@ void RenderSceneData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_view_projection", "view"), &RenderSceneData::get_view_projection);
 
 	ClassDB::bind_method(D_METHOD("get_uniform_buffer"), &RenderSceneData::get_uniform_buffer);
-	
-	
 	ClassDB::bind_method(D_METHOD("get_directional_light_buffer"), &RenderSceneData::get_directional_light_buffer);
 	ClassDB::bind_method(D_METHOD("get_omni_light_buffer"), &RenderSceneData::get_omni_light_buffer);
 	ClassDB::bind_method(D_METHOD("get_spot_light_buffer"), &RenderSceneData::get_spot_light_buffer);

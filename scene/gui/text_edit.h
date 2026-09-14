@@ -648,9 +648,9 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	HashMap<int, Vector<Pair<int64_t, Color>>> syntax_highlighting_cache;
+	HashMap<int, LocalVector<Pair<int64_t, Color>>> syntax_highlighting_cache;
 
-	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
+	bool _update_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
 	void _syntax_highlighter_changed();
 
@@ -700,6 +700,7 @@ private:
 
 		Ref<AudioStream> focus_sound;
 		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> caret_move_rejected_sound;
 		Ref<AudioStream> text_changed_sound;
 		Ref<AudioStream> text_change_rejected_sound;
 	} theme_cache;
@@ -746,6 +747,7 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
+	bool _has_any_caret_moved(const PackedVector2Array &p_previous_caret_positions) const;
 	bool _clear_carets_and_selection();
 
 protected:

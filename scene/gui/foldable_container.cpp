@@ -40,7 +40,7 @@ Size2 FoldableContainer::get_minimum_size() const {
 	if (folded) {
 		return title_minimum_size;
 	}
-	Size2 ms = Container::get_minimum_size();
+	Size2 ms = Container::_get_minimum_size();
 	ms += theme_cache.panel_style->get_minimum_size();
 
 	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
@@ -255,8 +255,11 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		const bool previously_folded = folded;
 		set_folded(!folded);
-		play_theme_sound(folded ? theme_cache.folded_sound : theme_cache.expanded_sound);
+		if (previously_folded != folded) {
+			play_theme_sound(folded ? theme_cache.folded_sound : theme_cache.expanded_sound);
+		}
 		emit_signal(SNAME("folding_changed"), folded);
 		accept_event();
 		return;
@@ -265,8 +268,11 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {
 		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed() && _get_title_rect().has_point(b->get_position())) {
+			const bool previously_folded = folded;
 			set_folded(!folded);
-			play_theme_sound(folded ? theme_cache.folded_sound : theme_cache.expanded_sound);
+			if (previously_folded != folded) {
+				play_theme_sound(folded ? theme_cache.folded_sound : theme_cache.expanded_sound);
+			}
 			emit_signal(SNAME("folding_changed"), folded);
 			accept_event();
 		}

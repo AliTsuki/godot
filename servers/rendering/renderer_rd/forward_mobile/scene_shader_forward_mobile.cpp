@@ -175,7 +175,6 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.stencil_mode_values["write_op_increment_and_clamp"] = Pair<int *, int>(&stencil_write_opi, STENCIL_WRITE_OP_INCREMENT_AND_CLAMP);
 	actions.stencil_mode_values["write_op_decrement_and_clamp"] = Pair<int *, int>(&stencil_write_opi, STENCIL_WRITE_OP_DECREMENT_AND_CLAMP);
 
-
 	actions.stencil_reference = &stencil_referencei;
 
 	actions.uniforms = &uniforms;
@@ -361,7 +360,6 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			RD::STENCIL_OP_INCREMENT_AND_CLAMP,
 			RD::STENCIL_OP_DECREMENT_AND_CLAMP,
 		};
-
 
 		uint32_t stencil_mask = 255;
 

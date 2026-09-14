@@ -1265,7 +1265,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					const Vector<Pair<int64_t, Color>> color_map = _get_line_syntax_highlighting(minimap_line);
+					const bool minimap_has_highlighting = _update_line_syntax_highlighting(minimap_line);
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
 
@@ -1330,15 +1330,17 @@ void TextEdit::_notification(int p_what) {
 							for (characters = 0; j + characters < str.length(); characters++) {
 								int next_char_index = j + characters;
 
-								for (const Pair<int64_t, Color> &color_data : color_map) {
-									if (last_wrap_column + next_char_index >= color_data.first) {
-										next_color = color_data.second;
-										if (!editable) {
-											next_color.a = theme_cache.font_readonly_color.a;
+								if (minimap_has_highlighting) {
+									for (const Pair<int64_t, Color> &color_data : syntax_highlighting_cache[minimap_line]) {
+										if (last_wrap_column + next_char_index >= color_data.first) {
+											next_color = color_data.second;
+											if (!editable) {
+												next_color.a = theme_cache.font_readonly_color.a;
+											}
+											next_color.a *= 0.6;
+										} else {
+											break;
 										}
-										next_color.a *= 0.6;
-									} else {
-										break;
 									}
 								}
 								if (characters == 0) {
@@ -1426,7 +1428,7 @@ void TextEdit::_notification(int p_what) {
 
 				LineDrawingCache cache_entry;
 
-				const Vector<Pair<int64_t, Color>> color_map = _get_line_syntax_highlighting(line);
+				const int has_highlighting = _update_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
 				Color current_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
@@ -1748,14 +1750,16 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					for (int j = 0; j < gl_size; j++) {
-						for (const Pair<int64_t, Color> &color_data : color_map) {
-							if (color_data.first <= glyphs[j].start) {
-								current_color = color_data.second;
-								if (!editable && current_color.a > theme_cache.font_readonly_color.a) {
-									current_color.a = theme_cache.font_readonly_color.a;
+						if (has_highlighting) {
+							for (const Pair<int64_t, Color> &color_data : syntax_highlighting_cache[line]) {
+								if (color_data.first <= glyphs[j].start) {
+									current_color = color_data.second;
+									if (!editable && current_color.a > theme_cache.font_readonly_color.a) {
+										current_color.a = theme_cache.font_readonly_color.a;
+									}
+								} else {
+									break;
 								}
-							} else {
-								break;
 							}
 						}
 						Color gl_color = current_color;
@@ -2993,13 +2997,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// to detect that the interaction was part of a pan gesture and avoid showing the virtual keyboard.
 		touch_dragging_in_progress = true;
 		pan_gesture_performed = true;
-		const real_t delta = pan_gesture->get_delta().y;
+		const real_t line_height = text.get_line_height();
+		const real_t delta = pan_gesture->get_delta().y / line_height;
 		if (delta < 0) {
 			_scroll_up(-delta, false);
 		} else {
 			_scroll_down(delta, false);
 		}
-		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
+		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
@@ -3402,7 +3407,11 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 	_push_current_op();
+
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		// Handle selection.
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3447,13 +3456,19 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 			}
 		}
 	}
+
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 	merge_overlapping_carets();
 	play_theme_sound(theme_cache.caret_moved_sound);
 }
 
 void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	_push_current_op();
+
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		// Handle selection.
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3498,13 +3513,18 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 			}
 		}
 	}
+
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 	merge_overlapping_carets();
 	play_theme_sound(theme_cache.caret_moved_sound);
 }
 
 void TextEdit::_move_caret_up(bool p_select) {
 	_push_current_op();
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else {
@@ -3526,12 +3546,16 @@ void TextEdit::_move_caret_up(bool p_select) {
 		}
 	}
 	merge_overlapping_carets();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_down(bool p_select) {
 	_push_current_op();
+
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else {
@@ -3549,12 +3573,16 @@ void TextEdit::_move_caret_down(bool p_select) {
 		}
 	}
 	merge_overlapping_carets();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_to_line_start(bool p_select) {
 	_push_current_op();
+
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else {
@@ -3581,12 +3609,15 @@ void TextEdit::_move_caret_to_line_start(bool p_select) {
 		}
 	}
 	merge_overlapping_carets();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_to_line_end(bool p_select) {
 	_push_current_op();
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else {
@@ -3607,12 +3638,16 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 		}
 	}
 	merge_overlapping_carets();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_page_up(bool p_select) {
 	_push_current_op();
+
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else {
@@ -3624,12 +3659,16 @@ void TextEdit::_move_caret_page_up(bool p_select) {
 		set_caret_line(n_line, i == 0, false, next_line.y, i);
 	}
 	merge_overlapping_carets();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_page_down(bool p_select) {
 	_push_current_op();
+
+	PackedVector2Array previous_caret_positions;
 	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+
 		if (p_select) {
 			_pre_shift_selection(i);
 		} else {
@@ -3641,7 +3680,7 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 		set_caret_line(n_line, i == 0, false, next_line.y, i);
 	}
 	merge_overlapping_carets();
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
@@ -3740,6 +3779,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 
 		int curline_len = text[get_caret_line(caret_index)].length();
 		if (get_caret_line(caret_index) == text.size() - 1 && get_caret_column(caret_index) == curline_len) {
+			play_theme_sound(theme_cache.text_change_rejected_sound);
 			continue; // Last line, last column: Nothing to do.
 		}
 
@@ -3794,7 +3834,13 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 }
 
 void TextEdit::_move_caret_document_start(bool p_select) {
+	PackedVector2Array previous_caret_positions;
+	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+	}
+
 	remove_secondary_carets();
+
 	if (p_select) {
 		_pre_shift_selection(0);
 	} else {
@@ -3803,10 +3849,15 @@ void TextEdit::_move_caret_document_start(bool p_select) {
 
 	set_caret_line(0, false, true, -1);
 	set_caret_column(0);
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_document_end(bool p_select) {
+	PackedVector2Array previous_caret_positions;
+	for (int i = 0; i < get_caret_count(); i++) {
+		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+	}
+
 	remove_secondary_carets();
 	if (p_select) {
 		_pre_shift_selection(0);
@@ -3816,7 +3867,22 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 
 	set_caret_line(get_last_unhidden_line(), true, false, -1);
 	set_caret_column(text[get_caret_line()].length());
-	play_theme_sound(theme_cache.caret_moved_sound);
+	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
+}
+
+bool TextEdit::_has_any_caret_moved(const PackedVector2Array &p_previous_caret_positions) const {
+	if (get_caret_count() != p_previous_caret_positions.size()) {
+		// A caret merge has occurred, which means at least one caret has moved.
+		return true;
+	}
+
+	for (int i = 0; i < get_caret_count(); i++) {
+		if (!p_previous_caret_positions[i].is_equal_approx(Vector2(get_caret_line(i), get_caret_column(i)))) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool TextEdit::_clear_carets_and_selection() {
@@ -8320,6 +8386,7 @@ void TextEdit::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TextEdit, focus_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TextEdit, caret_moved_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TextEdit, caret_move_rejected_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TextEdit, text_changed_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TextEdit, text_change_rejected_sound);
 
@@ -9736,18 +9803,17 @@ Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
 }
 
 /* Syntax highlighting. */
-Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line) {
+bool TextEdit::_update_line_syntax_highlighting(int p_line) {
 	if (syntax_highlighter.is_null() || setting_text) {
-		return Vector<Pair<int64_t, Color>>();
+		return false;
 	}
 
-	HashMap<int, Vector<Pair<int64_t, Color>>>::Iterator E = syntax_highlighting_cache.find(p_line);
-	if (E) {
-		return E->value;
+	if (syntax_highlighting_cache.has(p_line)) {
+		return true;
 	}
 
 	Dictionary color_map = syntax_highlighter->get_line_syntax_highlighting(p_line);
-	Vector<Pair<int64_t, Color>> result;
+	LocalVector<Pair<int64_t, Color>> result;
 	result.resize(color_map.size());
 	int i = 0;
 	for (const Variant *key = color_map.next(nullptr); key; key = color_map.next(key), i++) {
@@ -9757,11 +9823,11 @@ Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line)
 		if (color_data != nullptr) {
 			color_value = (color_data->operator Dictionary()).get("color", color_value);
 		}
-		result.write[i] = Pair<int64_t, Color>(key_data, color_value);
+		result[i] = Pair<int64_t, Color>(key_data, color_value);
 	}
 	syntax_highlighting_cache.insert(p_line, result);
 
-	return result;
+	return true;
 }
 
 void TextEdit::_clear_syntax_highlighting_cache() {
