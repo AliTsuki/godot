@@ -315,7 +315,7 @@ half sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec
 
 	// Higher values result in sharper shadow outlines (must be 1.0 or greater).
 	// TODO: Use derivatives to threshold hardness so that it's low enough to avoid aliasing at a distance.
-	const float HARDNESS = 2.0;
+	const float HARDNESS = 20.0;
 
 	//if only one sample is taken, take it from the center
 	if (sc_directional_soft_shadow_samples() == 0) {
