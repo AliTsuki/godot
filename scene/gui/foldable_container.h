@@ -85,10 +85,6 @@ private:
 		Ref<Texture2D> folded_arrow_mirrored;
 
 		int h_separation = 0;
-
-		Ref<AudioStream> focus_sound;
-		Ref<AudioStream> expanded_sound;
-		Ref<AudioStream> folded_sound;
 		int icon_max_width = 0;
 
 		Ref<AudioStream> focus_sound;

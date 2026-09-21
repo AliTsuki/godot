@@ -3473,7 +3473,6 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 		}
 	}
 
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 }
@@ -3530,7 +3529,6 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 		}
 	}
 
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 }
@@ -3564,7 +3562,6 @@ void TextEdit::_move_caret_up(bool p_select) {
 
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 void TextEdit::_move_caret_down(bool p_select) {
 	_push_current_op();
@@ -3592,7 +3589,6 @@ void TextEdit::_move_caret_down(bool p_select) {
 
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_to_line_start(bool p_select) {
@@ -3630,7 +3626,6 @@ void TextEdit::_move_caret_to_line_start(bool p_select) {
 
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_to_line_end(bool p_select) {
@@ -3661,7 +3656,6 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 void TextEdit::_move_caret_page_up(bool p_select) {
 	_push_current_op();
@@ -3683,7 +3677,6 @@ void TextEdit::_move_caret_page_up(bool p_select) {
 
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_page_down(bool p_select) {
@@ -3706,7 +3699,6 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 
 	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
