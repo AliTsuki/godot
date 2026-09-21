@@ -3113,7 +3113,7 @@ void Control::release_focus() {
 
 void Control::play_theme_sound(const Ref<AudioStream> &p_stream) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_stream.is_null() || !get_tree()) {
+	if (p_stream.is_null() || p_stream->get_length() == 0 || !get_tree()) {
 		return;
 	}
 

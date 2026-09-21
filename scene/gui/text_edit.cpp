@@ -2281,6 +2281,7 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 		if (!k->is_pressed()) {
 			return;
 		}
+
 		// Handle Unicode (with modifiers active, process after shortcuts).
 		if (has_focus() && editable && (k->get_unicode() >= 32)) {
 			handle_unicode_input(k->get_unicode());
@@ -2693,6 +2694,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (!selection_clicked) {
 						deselect();
 						remove_secondary_carets();
+						if (get_caret_line() != mouse_line || get_caret_column() != mouse_column) {
+							play_theme_sound(theme_cache.caret_moved_sound);
+						}
 						set_caret_line(mouse_line, false, false, -1);
 						set_caret_column(mouse_column);
 					}
@@ -2720,6 +2724,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					deselect();
 
 					Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+					if (get_caret_line() != pos.y || get_caret_column() != pos.x) {
+						play_theme_sound(theme_cache.caret_moved_sound);
+					}
 					set_caret_line(pos.y, false, true, -1, 0);
 					set_caret_column(pos.x, true, 0);
 				}
@@ -2870,6 +2877,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				_push_current_op();
 				set_caret_line(line, false, true, -1, caret);
 				set_caret_column(col, false, caret);
+				play_theme_sound(theme_cache.caret_moved_sound);
 
 				adjust_viewport_to_caret();
 			} else {
@@ -3044,6 +3052,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
+		last_key_is_echo = k->is_echo();
+
 		_cancel_drag_and_drop_text();
 
 		_reset_caret_blink_timer();
@@ -3163,11 +3173,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			// UNDO/REDO.
 			if (k->is_action("ui_undo", true)) {
+				if (!has_undo()) {
+					play_theme_sound(theme_cache.text_change_rejected_sound);
+				}
 				undo();
 				accept_event();
 				return;
 			}
 			if (k->is_action("ui_redo", true)) {
+				if (!has_redo()) {
+					play_theme_sound(theme_cache.text_change_rejected_sound);
+				}
 				redo();
 				accept_event();
 				return;
@@ -3408,9 +3424,9 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 	_push_current_op();
 
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		// Handle selection.
 		if (p_select) {
@@ -3458,15 +3474,16 @@ void TextEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 	}
 
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 }
 
 void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	_push_current_op();
 
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		// Handle selection.
 		if (p_select) {
@@ -3514,14 +3531,15 @@ void TextEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	}
 
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 }
 
 void TextEdit::_move_caret_up(bool p_select) {
 	_push_current_op();
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3543,16 +3561,17 @@ void TextEdit::_move_caret_up(bool p_select) {
 			}
 		}
 	}
+
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
-
 void TextEdit::_move_caret_down(bool p_select) {
 	_push_current_op();
 
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3570,6 +3589,8 @@ void TextEdit::_move_caret_down(bool p_select) {
 			set_caret_line(new_line, i == 0, false, 0, i);
 		}
 	}
+
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
@@ -3577,9 +3598,9 @@ void TextEdit::_move_caret_down(bool p_select) {
 void TextEdit::_move_caret_to_line_start(bool p_select) {
 	_push_current_op();
 
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3606,15 +3627,17 @@ void TextEdit::_move_caret_to_line_start(bool p_select) {
 			set_caret_column(row_start_col, i == 0, i);
 		}
 	}
+
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
 
 void TextEdit::_move_caret_to_line_end(bool p_select) {
 	_push_current_op();
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3635,16 +3658,17 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 			set_caret_column(row_end_col, i == 0, i);
 		}
 	}
+
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
-
 void TextEdit::_move_caret_page_up(bool p_select) {
 	_push_current_op();
 
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3656,6 +3680,8 @@ void TextEdit::_move_caret_page_up(bool p_select) {
 		int n_line = get_caret_line(i) - next_line.x + 1;
 		set_caret_line(n_line, i == 0, false, next_line.y, i);
 	}
+
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
@@ -3663,9 +3689,9 @@ void TextEdit::_move_caret_page_up(bool p_select) {
 void TextEdit::_move_caret_page_down(bool p_select) {
 	_push_current_op();
 
-	PackedVector2Array previous_caret_positions;
+	Vector<Vector3i> previous_caret_positions_and_selections;
 	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i)));
 
 		if (p_select) {
 			_pre_shift_selection(i);
@@ -3677,6 +3703,8 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 		int n_line = get_caret_line(i) + next_line.x - 1;
 		set_caret_line(n_line, i == 0, false, next_line.y, i);
 	}
+
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 	merge_overlapping_carets();
 	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
 }
@@ -3832,9 +3860,9 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 }
 
 void TextEdit::_move_caret_document_start(bool p_select) {
-	PackedVector2Array previous_caret_positions;
-	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+	Vector<Vector3i> previous_caret_positions_and_selections;
+	if (get_caret_count() == 1) {
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(0), get_caret_column(0), has_selection(0)));
 	}
 
 	remove_secondary_carets();
@@ -3847,13 +3875,13 @@ void TextEdit::_move_caret_document_start(bool p_select) {
 
 	set_caret_line(0, false, true, -1);
 	set_caret_column(0);
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 }
 
 void TextEdit::_move_caret_document_end(bool p_select) {
-	PackedVector2Array previous_caret_positions;
-	for (int i = 0; i < get_caret_count(); i++) {
-		previous_caret_positions.push_back(Vector2(get_caret_line(i), get_caret_column(i)));
+	Vector<Vector3i> previous_caret_positions_and_selections;
+	if (get_caret_count() == 1) {
+		previous_caret_positions_and_selections.push_back(Vector3i(get_caret_line(0), get_caret_column(0), has_selection(0)));
 	}
 
 	remove_secondary_carets();
@@ -3865,17 +3893,29 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 
 	set_caret_line(get_last_unhidden_line(), true, false, -1);
 	set_caret_column(text[get_caret_line()].length());
-	play_theme_sound(_has_any_caret_moved(previous_caret_positions) ? theme_cache.caret_moved_sound : theme_cache.caret_move_rejected_sound);
+	_play_caret_moved_sound(previous_caret_positions_and_selections);
 }
 
-bool TextEdit::_has_any_caret_moved(const PackedVector2Array &p_previous_caret_positions) const {
+void TextEdit::_play_caret_moved_sound(const Vector<Vector3i> &p_previous_caret_positions_and_selections) {
+	if (_has_any_caret_moved(p_previous_caret_positions_and_selections)) {
+		play_theme_sound(theme_cache.caret_moved_sound);
+	} else if (!last_key_is_echo) {
+		// Only play the rejected sound if the last key was not a repeat
+		// to avoid spamming the sound effect (since the caret won't have further moved).
+		play_theme_sound(theme_cache.caret_move_rejected_sound);
+	}
+}
+
+// For each caret, the Vector3i stores the line in X, column in Y,
+// and a boolean in Z set to `true` if the caret had a selection active, `false` otherwise.
+bool TextEdit::_has_any_caret_moved(const Vector<Vector3i> &p_previous_caret_positions) const {
 	if (get_caret_count() != p_previous_caret_positions.size()) {
 		// A caret merge has occurred, which means at least one caret has moved.
 		return true;
 	}
 
 	for (int i = 0; i < get_caret_count(); i++) {
-		if (!p_previous_caret_positions[i].is_equal_approx(Vector2(get_caret_line(i), get_caret_column(i)))) {
+		if (p_previous_caret_positions[i] != Vector3i(get_caret_line(i), get_caret_column(i), has_selection(i))) {
 			return true;
 		}
 	}

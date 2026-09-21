@@ -762,6 +762,11 @@ void ScrollBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_changed_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_change_rejected_sound);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollBar, icon_max_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, drag_ended_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_changed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_change_rejected_sound);
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {

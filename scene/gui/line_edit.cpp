@@ -230,7 +230,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 	shift_selection_check_post(p_select);
 	_reset_caret_blink_timer();
-	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
@@ -271,7 +271,7 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 	shift_selection_check_post(p_select);
 	_reset_caret_blink_timer();
-	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_move_caret_start(bool p_select) {
@@ -279,7 +279,7 @@ void LineEdit::_move_caret_start(bool p_select) {
 	shift_selection_check_pre(p_select);
 	set_caret_column(0);
 	shift_selection_check_post(p_select);
-	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_move_caret_end(bool p_select) {
@@ -287,7 +287,7 @@ void LineEdit::_move_caret_end(bool p_select) {
 	shift_selection_check_pre(p_select);
 	set_caret_column(text.length());
 	shift_selection_check_post(p_select);
-	play_theme_sound(caret_column == previous_caret_column ? theme_cache.caret_move_rejected_sound : theme_cache.caret_moved_sound);
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
@@ -385,6 +385,16 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 			set_caret_column(TS->shaped_text_next_character_pos(text_rid, caret_column));
 			delete_text(cc, caret_column);
 		}
+	}
+}
+
+void LineEdit::_play_caret_moved_sound(bool p_valid) {
+	if (p_valid) {
+		play_theme_sound(theme_cache.caret_moved_sound);
+	} else if (!last_key_is_echo) {
+		// Only play the rejected sound if the last key was not a repeat
+		// to avoid spamming the sound effect (since the caret won't have further moved).
+		play_theme_sound(theme_cache.caret_move_rejected_sound);
 	}
 }
 
@@ -934,6 +944,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	last_key_is_echo = k->is_echo();
+
 	// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
 	if (k->is_action_pressed("ui_text_submit")) {
 		emit_signal(SceneStringName(text_submitted), text);
@@ -970,12 +982,18 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Undo / Redo
 		if (k->is_action("ui_undo", true)) {
+			if (!has_undo()) {
+				play_theme_sound(theme_cache.text_change_rejected_sound);
+			}
 			undo();
 			accept_event();
 			return;
 		}
 
 		if (k->is_action("ui_redo", true)) {
+			if (!has_redo()) {
+				play_theme_sound(theme_cache.text_change_rejected_sound);
+			}
 			redo();
 			accept_event();
 			return;

@@ -714,6 +714,9 @@ private:
 	bool draw_tabs = false;
 	bool draw_spaces = false;
 
+	// Used to avoid spamming `caret_move_rejected_sound` when key repeat is enabled.
+	bool last_key_is_echo = false;
+
 	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
 	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
 
@@ -747,7 +750,8 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
-	bool _has_any_caret_moved(const PackedVector2Array &p_previous_caret_positions) const;
+	void _play_caret_moved_sound(const Vector<Vector3i> &p_previous_caret_positions_and_selections);
+	bool _has_any_caret_moved(const Vector<Vector3i> &p_previous_caret_positions_and_selections) const;
 	bool _clear_carets_and_selection();
 
 protected:
