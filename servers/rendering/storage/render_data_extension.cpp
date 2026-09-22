@@ -73,6 +73,13 @@ void RenderSceneDataExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_view_projection, "view");
 
 	GDVIRTUAL_BIND(_get_uniform_buffer);
+	GDVIRTUAL_BIND(_get_directional_light_buffer);
+	GDVIRTUAL_BIND(_get_omni_light_buffer);
+	GDVIRTUAL_BIND(_get_spot_light_buffer);
+
+	GDVIRTUAL_BIND(_decal_atlas_get_texture);
+	GDVIRTUAL_BIND(_decal_atlas_get_texture_srgb);
+	GDVIRTUAL_BIND(_directional_shadow_get_texture);
 }
 
 Transform3D RenderSceneDataExtension::get_cam_transform() const {
@@ -108,6 +115,42 @@ Projection RenderSceneDataExtension::get_view_projection(uint32_t p_view) const 
 RID RenderSceneDataExtension::get_uniform_buffer() const {
 	RID ret;
 	GDVIRTUAL_CALL(_get_uniform_buffer, ret);
+	return ret;
+}
+
+RID RenderSceneDataExtension::get_directional_light_buffer() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_directional_light_buffer, ret);
+	return ret;
+}
+
+RID RenderSceneDataExtension::get_omni_light_buffer() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_omni_light_buffer, ret);
+	return ret;
+}
+
+RID RenderSceneDataExtension::get_spot_light_buffer() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_spot_light_buffer, ret);
+	return ret;
+}
+
+RID RenderSceneDataExtension::decal_atlas_get_texture() const {
+	RID ret;
+	GDVIRTUAL_CALL(_decal_atlas_get_texture, ret);
+	return ret;
+}
+
+RID RenderSceneDataExtension::decal_atlas_get_texture_srgb() const {
+	RID ret;
+	GDVIRTUAL_CALL(_decal_atlas_get_texture_srgb, ret);
+	return ret;
+}
+
+RID RenderSceneDataExtension::directional_shadow_get_texture() const {
+	RID ret;
+	GDVIRTUAL_CALL(_directional_shadow_get_texture, ret);
 	return ret;
 }
 
