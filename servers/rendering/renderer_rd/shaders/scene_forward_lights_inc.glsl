@@ -344,9 +344,13 @@ half sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, flo
 	vec2 pos = coord.xy;
 	float depth = coord.z;
 
+	// Higher values result in sharper shadow outlines (must be 1.0 or greater).
+	// TODO: Use derivatives to threshold hardness so that it's low enough to avoid aliasing at a distance.
+	const float HARDNESS = 20.0;
+
 	//if only one sample is taken, take it from the center
 	if (sc_soft_shadow_samples() == 0) {
-		return half(textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0)));
+		return half(smoothstep(0.0, 1.0, 0.5 + textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos, depth, 1.0)) * HARDNESS - HARDNESS * 0.5));
 	}
 
 	mat2 disk_rotation = mat2(1.0);
@@ -368,6 +372,10 @@ half sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, flo
 }
 
 half sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec4 uv_rect, vec2 flip_offset, float depth, float taa_frame_count) {
+	// Higher values result in sharper shadow outlines (must be 1.0 or greater).
+	// TODO: Use derivatives to threshold hardness so that it's low enough to avoid aliasing at a distance.
+	const float HARDNESS = 20.0;
+	
 	//if only one sample is taken, take it from the center
 	if (sc_soft_shadow_samples() == 0) {
 		vec2 pos = coord * 0.5 + 0.5;
