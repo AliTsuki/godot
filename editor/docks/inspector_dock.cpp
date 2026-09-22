@@ -113,7 +113,6 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
 				ScriptEditor::get_singleton()->focus_editor();
-				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 				// Prefer the documentation page of the object's script (e.g. a C# or
 				// GDScript class) over the one of its native base class, mirroring what
 				// the inspector categories do.
