@@ -33,9 +33,8 @@
 #include "jolt_shape_3d.h"
 
 class JoltCapsuleShape3D final : public JoltShape3D {
-	float radius_top = 0.0f;
-	float radius_bottom = 0.0f;
-	float mid_height = 0.0f;
+	float height = 0.0f;
+	float radius = 0.0f;
 
 	virtual JPH::ShapeRefC _build() const override;
 
