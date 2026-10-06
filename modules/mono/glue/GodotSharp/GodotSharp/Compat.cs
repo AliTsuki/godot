@@ -11,6 +11,7 @@ namespace Godot;
 // TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
 #pragma warning disable IDE0040 // Add accessibility modifiers.
 
+/*
 partial class AnimationNode
 {
     /// <inheritdoc cref="BlendInput(int, double, bool, bool, float, FilterAction, bool, bool)"/>
@@ -253,5 +254,5 @@ partial class UndoRedo
         CreateAction(name, mergeMode, backwardUndoOps: false);
     }
 }
-
+*/
 #pragma warning restore CS1734
