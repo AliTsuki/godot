@@ -515,8 +515,6 @@ public:
 		NOTIFICATION_MOUSE_EXIT_SELF = 61,
 	};
 
-	bool is_stylebox_animator_connected = false;
-
 	// Editor plugin interoperability.
 
 #ifdef DEBUG_ENABLED
