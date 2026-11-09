@@ -2181,8 +2181,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	Transform3D light_transform = p_instance->transform;
-	light_transform.orthonormalize(); //scale does not count on lights
+	const Transform3D light_transform = p_instance->transform.orthonormalized();
 
 	const Vector2 depth_range = p_cam_projection.get_frustum_depth_range();
 	real_t max_distance = depth_range.y;
@@ -2229,7 +2228,6 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	cull.shadows[p_shadow_index].caster_mask = RSG::light_storage->light_get_shadow_caster_mask(p_instance->base);
 
 	// Discard scale
-	const Transform3D light_transform = p_instance->transform.orthonormalized();
 	const Vector3 light_basis_x = light_transform.basis.get_column(Vector3::AXIS_X); // Already normalized
 	const Vector3 light_basis_y = light_transform.basis.get_column(Vector3::AXIS_Y);
 	const Vector3 light_basis_z = light_transform.basis.get_column(Vector3::AXIS_Z);
