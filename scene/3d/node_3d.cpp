@@ -165,6 +165,7 @@ void Node3D::_notification(int p_what) {
 				data.index_in_parent = UINT32_MAX;
 				ERR_PRINT("Node3D ENTER_TREE detected without EXIT_TREE, recovering.");
 			}
+			_update_visible_in_tree();
 
 			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
@@ -237,6 +238,7 @@ void Node3D::_notification(int p_what) {
 
 			data.parent = nullptr;
 			_update_visibility_parent(true);
+			_update_visible_in_tree();
 			_disable_client_physics_interpolation();
 		} break;
 
@@ -1017,6 +1019,35 @@ Ref<World3D> Node3D::get_world_3d() const {
 	return data.viewport->find_world_3d();
 }
 
+void Node3D::_update_visible_in_tree() {
+	Node3D *parent = get_parent_node_3d();
+
+	bool propagate_visible = parent ? parent->data.visible_in_tree : true;
+
+	// Only propagate visible when entering tree if we are visible.
+	propagate_visible &= is_visible();
+
+	_propagate_visible_in_tree(propagate_visible);
+}
+
+void Node3D::_propagate_visible_in_tree(bool p_visible_in_tree) {
+	// If any node is invisible, the propagation changes to invisible below.
+	p_visible_in_tree &= is_visible();
+
+	// No change.
+	if (data.visible_in_tree == p_visible_in_tree) {
+		return;
+	}
+
+	data.visible_in_tree = p_visible_in_tree;
+
+	for (uint32_t n = 0; n < data.node3d_children.size(); n++) {
+		Node3D *s = data.node3d_children[n];
+		DEV_ASSERT(s);
+		s->_propagate_visible_in_tree(p_visible_in_tree);
+	}
+}
+
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringName(visibility_changed));
@@ -1055,9 +1086,19 @@ void Node3D::set_visible(bool p_visible) {
 
 	data.visible = p_visible;
 
+	// This is effectively `get_parent_node_3d()` without the thread guard,
+	// as we know we are running on the main thread.
+	Node3D *parent = data.top_level ? nullptr : Object::cast_to<Node3D>(get_parent());
+
+	bool parent_visible = parent ? parent->data.visible_in_tree : true;
+	if (parent_visible) {
+		_propagate_visible_in_tree(p_visible);
+	}
+
 	if (!is_inside_tree()) {
 		return;
 	}
+
 	_propagate_visibility_changed();
 }
 
@@ -1066,7 +1107,7 @@ bool Node3D::is_visible() const {
 	return data.visible;
 }
 
-bool Node3D::is_visible_in_tree() const {
+bool Node3D::_is_visible_in_tree_reference() const {
 	ERR_READ_THREAD_GUARD_V(false); // Since visibility can only be changed from main thread, this is safe to call.
 	const Node3D *s = this;
 
@@ -1491,6 +1532,7 @@ Node3D::Node3D() :
 	data.notify_transform = false;
 
 	data.visible = true;
+	data.visible_in_tree = true;
 	data.disable_scale = false;
 	data.vi_visible = true;
 
