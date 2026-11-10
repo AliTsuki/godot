@@ -38,6 +38,7 @@
 #include "core/object/class_db.h"
 #include "core/os/time.h"
 #include "editor/docks/inspector_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
@@ -797,6 +798,9 @@ bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
 			new_selection.push_back(new_node);
 		}
 	}
+
+	// Make sure no editor is editing a node when the scene is freed.
+	EditorNode::get_singleton()->hide_unused_editors(SceneTreeDock::get_singleton());
 
 	new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
 	Node *old_root = edited_scene[p_idx].root;
