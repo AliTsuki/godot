@@ -483,8 +483,7 @@ void Node3D::_disable_client_physics_interpolation() {
 
 // Visible nodes - get_global_transform_interpolated is cheap.
 // Invisible nodes - get_global_transform_interpolated is expensive, try to avoid.
-Transform3D Node3D::get_global_transform_interpolated() {
-#if 1
+Transform3D Node3D::get_global_transform_interpolated() const {
 	// Needs a thread guard because it is checking visible in tree.
 	ERR_READ_THREAD_GUARD_V(Transform3D());
 
