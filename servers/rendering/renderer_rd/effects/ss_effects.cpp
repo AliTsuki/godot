@@ -980,10 +980,10 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 				source_blur_uniform_set = uniform_set_cache->get_cache(upsample_shader, 0, u_upsampled, u_blurred_0x25);
 			}
 
-			RID buffers_uniform_set;
-			{
-				buffers_uniform_set = uniform_set_cache->get_cache(upsample_shader, 1, u_edges);
-			}
+			//RID buffers_uniform_set;
+			//{
+			buffers_uniform_set = uniform_set_cache->get_cache(upsample_shader, 1, u_edges);
+			//}
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_UPSAMPLE].get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_blur_uniform_set, 0);
