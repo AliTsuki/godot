@@ -1718,8 +1718,8 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (selection.drag_attempt && !is_visible_in_tree()) {
-				callable_mp(this, &LineEdit::_cancel_drag_and_drop_text).call_deferred();
+			if (selection.drag_attempt && get_viewport() && !is_visible_in_tree()) {
+				callable_mp(get_viewport(), &Viewport::gui_cancel_drag).call_deferred();
 			}
 		} break;
 
