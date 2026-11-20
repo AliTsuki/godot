@@ -728,6 +728,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["RANLIB"] = get_detected(env, "ranlib")
         env["AS"] = get_detected(env, "clang")
         env.Append(ASFLAGS=["-c"])
+        env.Append(CXXFLAGS=["-Wno-error=unused-template"])
         env.extra_suffix = ".llvm" + env.extra_suffix
     else:
         env["CC"] = get_detected(env, "gcc")
